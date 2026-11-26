@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf9f6">
+<meta name="description" content="Поиск произведений искусства по темам, вопросам и переживаниям.">
+<title>Отклик — искусство вместо ответа</title>
+<style>
+:root {--paper:#faf9f6;--ink:#20201f;--gray:#74746f;--faint:#a7a69f;--rule:#deddd8;--blank:#ecebe6}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);margin:0;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{cursor:pointer}a{color:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+::selection{background:#dbd9ce}
+.container{width:min(100% - 72px,1160px);margin-inline:auto}
+.header{display:flex;align-items:center;justify-content:space-between;height:88px;border-bottom:1px solid var(--rule)}
+.brand{font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1;letter-spacing:-.065em;white-space:nowrap;background:none;border:0;padding:0;color:var(--ink);font-weight:500}.brand span{margin-left:1px}
+.header-note{font-size:12px;color:var(--gray);letter-spacing:.012em}
+.page{min-height:calc(100svh - 140px)}
+.hero{min-height:calc(100svh - 140px);display:flex;align-items:center;justify-content:center;padding:70px 0 90px;transition:min-height .25s,padding .25s}
+.hero-inner{width:min(100%,830px);text-align:center}
+.eyebrow,.overline{color:var(--gray);letter-spacing:.155em;text-transform:uppercase;font-size:10px;font-weight:600}
+.hero h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:clamp(48px,6.7vw,84px);letter-spacing:-.061em;line-height:1.105;margin:27px 0 29px}
+.hero-copy{font-size:15px;line-height:1.75;color:var(--gray);max-width:480px;margin:0 auto 46px}
+.main-form{display:flex;align-items:center;border-bottom:1px solid var(--ink);width:min(100%,735px);margin:0 auto;gap:16px;padding:0 0 7px}
+.main-form input{height:62px;min-width:0;flex:1;border:0;background:transparent;color:var(--ink);font-size:20px;letter-spacing:-.025em;outline:0!important}
+.main-form input::placeholder{color:#9a9993}
+.main-form button{width:48px;height:48px;flex:0 0 48px;border:0;background:var(--ink);color:var(--paper);font-size:24px;display:grid;place-items:center;transition:background .15s,transform .15s}
+.main-form button:hover{background:#484842;transform:translateX(2px)}
+.main-form button:disabled{opacity:.6;cursor:default;transform:none}
+.examples{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin-top:22px}
+.examples button{color:var(--gray);border:0;border-bottom:1px solid transparent;padding:2px 0;background:transparent;font-size:12px}
+.examples button:hover{border-color:var(--gray);color:var(--ink)}
+.results{display:none;padding-bottom:100px;animation:fade .25s ease}
+@keyframes fade{from{opacity:.2;transform:translateY(5px)}to{opacity:1;transform:none}}
+body.searched .hero{min-height:0;justify-content:start;padding:44px 0 42px}
+body.searched .hero-inner{max-width:none;width:100%;text-align:left}
+body.searched .hero h1{font-size:39px;margin:12px 0 19px;line-height:1.19}
+body.searched .hero-copy,body.searched .examples{display:none}
+body.searched .main-form{margin:0;width:min(100%,680px)}
+body.searched .main-form input{height:46px;font-size:16px}
+body.searched .main-form button{width:42px;height:42px;flex-basis:42px;font-size:20px}
+body.searched .results{display:block}
+.results-head{border-top:1px solid var(--rule);padding:38px 0 24px}
+.result-state{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.result-state .status{color:var(--gray);font-size:11px}
+.results-head h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:clamp(38px,4.6vw,60px);letter-spacing:-.052em;line-height:1.15;margin:17px 0 12px;overflow-wrap:anywhere}
+.results-head p{margin:0;color:var(--gray);font-size:14px;line-height:1.6;max-width:730px}
+.refine{display:grid;grid-template-columns:140px 1fr;align-items:center;gap:24px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:21px 0;margin:20px 0 26px}
+.refine label{font-family:Georgia,'Times New Roman',serif;font-size:23px;letter-spacing:-.04em}
+.refine-form{display:flex;gap:12px;align-items:center;min-width:0}
+.refine-form input{min-width:0;flex:1;border:0;outline:0!important;color:var(--ink);background:transparent;font-size:14px;padding:12px 0}
+.refine-form input::placeholder{color:#a09f98}
+.refine-form button{border:1px solid var(--ink);background:transparent;color:var(--ink);padding:12px 16px;font-size:12px;white-space:nowrap;transition:background .2s,color .2s}
+.refine-form button:hover{background:var(--ink);color:#fff}
+.refinement-active{display:none;margin:-7px 0 20px;font-size:12px;color:var(--gray)}
+.refinement-active.show{display:flex;align-items:center;gap:10px}
+.refinement-active strong{font-weight:400;color:var(--ink)}
+.refinement-active button{background:transparent;border:0;border-bottom:1px solid #8b8a84;color:#777;font-size:12px;padding:1px 0}
+.tabs{display:flex;align-items:center;gap:26px;margin-top:4px;padding:0 0 18px;border-bottom:1px solid var(--rule)}
+.tab{background:none;border:0;color:var(--gray);font-size:13px;padding:8px 0;border-bottom:1px solid transparent;white-space:nowrap}
+.tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.tab:hover{color:var(--ink)}
+.total{margin-left:auto;font-size:11px;color:var(--faint);white-space:nowrap}
+.work-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:56px;row-gap:0}
+.work{display:grid;grid-template-columns:136px minmax(0,1fr);gap:22px;min-width:0;padding:33px 0;border-bottom:1px solid var(--rule)}
+.cover{width:136px;height:196px;background:var(--blank);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #e6e4dc}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:1;transition:opacity .2s}
+.cover.painting img{object-fit:contain}
+.cover img.hidden{opacity:0}
+.cover .no-image{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;padding:12px;text-align:center;color:#a09f97;font-size:12px;line-height:1.45;letter-spacing:.02em}
+.work-type{color:var(--gray);font-size:10px;letter-spacing:.11em;text-transform:uppercase;margin:3px 0 17px}
+.work h3{font-family:Georgia,'Times New Roman',serif;font-size:clamp(19px,2.05vw,24px);font-weight:400;letter-spacing:-.032em;line-height:1.17;margin:0 0 10px}
+.work-author{color:var(--gray);font-size:12px;line-height:1.4;margin:0 0 15px}
+.work-why{font-size:13px;line-height:1.55;margin:0 0 16px;color:#4c4c49}
+.work-link{font-size:11px;color:var(--ink);text-decoration:none;border-bottom:1px solid #aaa9a0;padding-bottom:3px;display:inline-block}
+.work-link:hover{border-color:var(--ink)}
+.disclaimer{font-size:11px;color:#95938d;line-height:1.6;margin:32px 0 0}
+.empty,.loading{font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.5;color:var(--gray);padding:50px 0}
+.empty p{font-family:Arial,Helvetica,sans-serif;font-size:13px;margin-top:15px;max-width:550px}
+.loading:after{content:' ';display:inline-block;width:16px;height:1px;vertical-align:middle;margin-left:8px;background:var(--gray);animation:load 1s linear infinite alternate}
+@keyframes load{to{width:48px}}
+.footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--rule);padding:24px 0 27px;color:var(--gray);font-size:11px}
+.footer a{text-decoration:none;border-bottom:1px solid #b9b7af}
+.footer a:hover{color:var(--ink)}
+@media (max-width:850px){.container{width:min(100% - 42px,1160px)}.work-grid{grid-template-columns:1fr}.work{grid-template-columns:124px minmax(0,1fr)}.cover{width:124px;height:180px}.hero h1{font-size:clamp(49px,7vw,66px)}}
+@media (max-width:540px){.container{width:calc(100% - 38px)}.header{height:70px}.header-note{font-size:10px;max-width:145px;text-align:right;line-height:1.4}.brand{font-size:25px}.page{min-height:calc(100svh - 123px)}.hero{min-height:calc(100svh - 124px);padding:54px 0 76px}.hero h1{font-size:clamp(46px,12.6vw,63px);line-height:1.13;margin:20px 0 22px}.hero-copy{font-size:13px;line-height:1.65;margin-bottom:40px}.main-form input{font-size:16px;height:55px}.main-form button{width:42px;flex-basis:42px;height:42px}.examples{justify-content:flex-start;gap:11px 18px;text-align:left}.examples button{font-size:11px}.hero-inner{text-align:left}.eyebrow{font-size:10px}body.searched .hero{padding:27px 0 28px}body.searched .hero h1{font-size:30px}body.searched .main-form input{font-size:14px}.results-head{padding:28px 0 18px}.results-head h2{font-size:43px;margin:14px 0 10px}.results-head p{font-size:13px}.refine{display:block;padding:17px 0;margin:15px 0 17px}.refine label{font-size:21px;display:block;margin-bottom:4px}.refine-form{gap:8px}.refine-form input{font-size:13px}.refine-form button{padding:10px 13px}.tabs{gap:20px;overflow:auto;padding-bottom:11px}.tab{font-size:12px}.total{display:none}.work{padding:25px 0;grid-template-columns:100px minmax(0,1fr);gap:16px}.cover{width:100px;height:147px}.work-type{font-size:9px;margin:2px 0 10px}.work h3{font-size:20px;margin-bottom:7px}.work-author{font-size:11px;margin-bottom:10px}.work-why{font-size:12px;line-height:1.5;margin-bottom:11px}.work-link{font-size:10px}.footer{flex-direction:column;gap:8px;font-size:10px}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header"><button class="brand" id="home" aria-label="На главную">отклик<span>.</span></button><span class="header-note">Вопросы, смыслы, произведения</span></header>
+  <main class="page">
+    <section class="hero" id="hero"><div class="hero-inner">
+      <div class="eyebrow">Поиск по смыслу</div>
+      <h1>О чём ты хочешь<br>подумать?</h1>
+      <p class="hero-copy">Не готовый ответ, а книга, фильм или картина, которые помогут взглянуть на вопрос иначе.</p>
+      <form class="main-form" id="search-form">
+        <input id="query" aria-label="Вопрос или тема для поиска" placeholder="Например, что такое совесть?" autocomplete="off" maxlength="300" required>
+        <button type="submit" id="search-button" aria-label="Найти">→</button>
+      </form>
+      <div class="examples" aria-label="Примеры запросов"><button type="button" data-query="Что такое совесть?">Что такое совесть?</button><button type="button" data-query="Я застрял в жизни">Я застрял в жизни</button><button type="button" data-query="Париж">Париж</button><button type="button" data-query="Одиночество">Одиночество</button></div>
+    </div></section>
+    <section class="results" id="results" aria-live="polite">
+      <div class="results-head"><div class="result-state"><span class="overline">Произведения и смыслы</span><span id="mode-indicator" class="status"></span></div>
+        <h2 id="results-query"></h2><p id="results-intro"></p>
+      </div>
+      <div class="refine"><label for="refine-input">Уточнить</label><form id="refine-form" class="refine-form"><input id="refine-input" aria-label="Уточнить поиск" placeholder="Например, с точки зрения свободы или только фильмы" maxlength="240"><button id="refine-button" type="submit">Уточнить →</button></form></div>
+      <div class="refinement-active" id="active-refine"><span>Уточнение: <strong id="refine-label"></strong></span><button id="refine-reset" type="button">сбросить ×</button></div>
+      <nav class="tabs" aria-label="Виды искусства"><button class="tab active" data-type="all">Все</button><button class="tab" data-type="book">Книги</button><button class="tab" data-type="film">Фильмы</button><button class="tab" data-type="painting">Живопись</button><span class="total" id="total"></span></nav>
+      <div id="work-grid" class="work-grid"></div>
+      <div class="disclaimer" id="disclaimer"></div>
+    </section>
+  </main>
+  <footer class="footer"><span>Отклик — открывать искусство через вопросы. Поиск обращается к открытым каталогам.</span><span>Книги: <a target="_blank" rel="noopener" href="https://openlibrary.org/">Open Library</a> · Живопись и кино: <a target="_blank" rel="noopener" href="https://www.wikipedia.org/">Wikipedia</a> / Wikimedia</span></footer>
+</div>
+<script>
+'use strict';
+// Static GitHub Pages version. Curated semantic anchors + live open-catalog discovery.
+// No API key, no AI, no personal profiles or tracking.
+const DEMOS = {
+ conscience:{intro:'О вине, нравственном выборе и ответственности перед другими и собой.',items:[
+  ['book','Преступление и наказание','Crime and Punishment','Фёдор Достоевский','1866','Может ли человек заглушить собственную совесть рациональными доводами? Роман исследует столкновение убеждений и внутреннего нравственного чувства.','9780140449136','https://openlibrary.org/search?q=crime+and+punishment'],
+  ['film','12 разгневанных мужчин','12 Angry Men','Сидни Люмет','1957','Когда большинство уже готово вынести вердикт, один человек требует внимательнее посмотреть на обстоятельства. Здесь совесть — это ответственность за чужую судьбу.','','https://en.wikipedia.org/wiki/12_Angry_Men_(1957_film)'],
+  ['painting','Христос в пустыне','Christ in the Desert','Иван Крамской','1872','Фигура в пустыне передаёт напряжение внутреннего выбора. Картина говорит о сомнении, стойкости и следовании собственным убеждениям.','','https://en.wikipedia.org/wiki/Christ_in_the_Desert'],
+  ['film','Развод Надера и Симин','A Separation','Асгар Фархади','2011','История, в которой несколько людей считают себя правыми, но их решения болезненно отражаются на других. Совесть здесь сложнее простого деления на добро и зло.','','https://en.wikipedia.org/wiki/A_Separation'],
+  ['book','Убить пересмешника','To Kill a Mockingbird','Харпер Ли','1960','Книга показывает, насколько трудно оставаться верным собственным представлениям о справедливости, когда общество ожидает иного.','9780061120084','https://openlibrary.org/search?q=to+kill+a+mockingbird'],
+  ['painting','Герника','Guernica','Пабло Пикассо','1937','Полотно показывает страдание мирных людей без привычной героизации войны. Оно заставляет задуматься об ответственности за чужую боль.','','https://en.wikipedia.org/wiki/Guernica_(Picasso)']
+ ]},
+ stuck:{intro:'О периодах, когда привычная жизнь перестаёт казаться своей.',items:[
+  ['book','Сиддхартха','Siddhartha','Герман Гессе','1922','Герой пробует разные способы жить и постепенно обнаруживает, что чужие готовые ответы мало помогают найти собственный путь.','9780553208849','https://openlibrary.org/search?q=siddhartha+hesse'],
+  ['film','Идеальные дни','Perfect Days','Вим Вендерс','2023','Вместо истории о радикальной перемене — внимательный взгляд на жизнь, наполненную тихими повседневными ритуалами.','','https://en.wikipedia.org/wiki/Perfect_Days'],
+  ['painting','Полуночники','Nighthawks','Эдвард Хоппер','1942','Освещённое ночное кафе становится образом разобщённости среди людей. Картина не объясняет одиночество, а позволяет его заметить.','','https://en.wikipedia.org/wiki/Nighthawks_(painting)'],
+  ['film','Шоу Трумана','The Truman Show','Питер Уир','1998','Мир героя словно идеально устроен, но чувство несвободы оказывается сильнее комфорта. Фильм задаёт вопрос, кто определяет твой жизненный путь.','','https://en.wikipedia.org/wiki/The_Truman_Show'],
+  ['book','Посторонний','The Stranger','Альбер Камю','1942','Роман сталкивает человека с общественными ожиданиями относительно того, как нужно чувствовать и жить.','9780679720201','https://openlibrary.org/search?q=the+stranger+camus'],
+  ['film','Земляничная поляна','Wild Strawberries','Ингмар Бергман','1957','Поездка становится возможностью увидеть собственную жизнь иначе — через память и давно не заданные себе вопросы.','','https://en.wikipedia.org/wiki/Wild_Strawberries_(film)']
+ ]},
+ paris:{intro:'Город как место, образ, память и пространство для художественного взгляда.',items:[
+  ['painting','Парижская улица в дождливую погоду','Paris Street; Rainy Day','Гюстав Кайботт','1877','Почти кинематографический кадр нового города: широкий проспект, прохожие и едва уловимая дистанция между людьми.','','https://en.wikipedia.org/wiki/Paris_Street;_Rainy_Day'],
+  ['film','Полночь в Париже','Midnight in Paris','Вуди Аллен','2011','Париж становится поводом задуматься о ностальгии и соблазне считать прошлое прекраснее настоящего.','','https://en.wikipedia.org/wiki/Midnight_in_Paris'],
+  ['book','Собор Парижской Богоматери','The Hunchback of Notre-Dame','Виктор Гюго','1831','Средневековый Париж в романе — не декорация, а живое пространство, где переплетаются судьбы и общественные противоречия.','9780140443530','https://openlibrary.org/search?q=the+hunchback+of+notre+dame'],
+  ['film','Амели','Amélie','Жан-Пьер Жёне','2001','Монмартр представлен как мир маленьких открытий и человеческих случайностей, в которых повседневный город кажется сказочным.','','https://en.wikipedia.org/wiki/Am%C3%A9lie'],
+  ['book','Праздник, который всегда с тобой','A Moveable Feast','Эрнест Хемингуэй','1964','Воспоминания о парижских годах позволяют увидеть город как среду творческого взросления и общения.','9780684833637','https://openlibrary.org/search?q=a+moveable+feast'],
+  ['painting','Бульвар Монмартр, весеннее утро','Boulevard Montmartre, Spring Morning','Камиль Писсарро','1897','С высоты город превращается в ритм движения и света. Картина предлагает увидеть Париж как меняющийся организм.','','https://en.wikipedia.org/wiki/Camille_Pissarro']
+ ]},
+ loneliness:{intro:'Об одиночестве как боли, свободе, наблюдении и попытке близости.',items:[
+  ['painting','Полуночники','Nighthawks','Эдвард Хоппер','1942','Люди рядом, но между ними как будто остаётся невидимая преграда.','','https://en.wikipedia.org/wiki/Nighthawks_(painting)'],
+  ['film','Трудности перевода','Lost in Translation','София Коппола','2003','Два незнакомца ненадолго находят взаимопонимание посреди чужого города.','','https://en.wikipedia.org/wiki/Lost_in_Translation_(film)'],
+  ['book','Маленький принц','The Little Prince','Антуан де Сент-Экзюпери','1943','Небольшая история о том, что близость рождается из внимания и ответственности.','9780156012195','https://openlibrary.org/search?q=the+little+prince'],
+  ['painting','Звёздная ночь','The Starry Night','Винсент ван Гог','1889','Необычное, тревожное движение неба заставляет сопоставить внутреннее состояние с огромным внешним миром.','','https://en.wikipedia.org/wiki/The_Starry_Night'],
+  ['film','Небо над Берлином','Wings of Desire','Вим Вендерс','1987','Фильм показывает ценность человеческого присутствия через взгляд существа, наблюдающего жизнь со стороны.','','https://en.wikipedia.org/wiki/Wings_of_Desire'],
+  ['book','Степной волк','Steppenwolf','Герман Гессе','1927','Роман исследует разлад между человеком и обществом, а также разные стороны собственного «я».','9780312278670','https://openlibrary.org/search?q=steppenwolf+hesse']
+ ]}
+};
+const el = id=>document.getElementById(id);
+const state = {query:'', refinement:'', mode:'catalog', intro:'', works:[], filter:'all', busy:false};
+const kind={book:'Книга',film:'Фильм',painting:'Живопись'};
+function esc(text){return String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function normalize(text){return String(text).toLowerCase().replace(/ё/g,'е').trim();}
+function demoGroup(q){let n=normalize(q);if(/париж|paris/.test(n))return 'paris';if(/совест|вина|винов|морал|ответствен|справедлив|прощени/.test(n))return 'conscience';if(/одиноч|одиноко|изоляц|покинут/.test(n))return 'loneliness';if(/застр|тупик|смысл жизн|не знаю куда|потерял себя|потерялась/.test(n))return 'stuck';return null;}
+const KNOWN_POSTERS={
+ '12 Angry Men':'ow3wq89wM8qd5X7hWKxiRfsFf9C.jpg',
+ 'Midnight in Paris':'b5bcKhvN6VP82U5ztNdPfOLiolD.jpg',
+ 'Amélie':'9TEUJy5aRP7LaM1LKTfcxVK34JK.jpg',
+ 'Lost in Translation':'45He7gApNQyDbqCDjxew9BnHzjf.jpg'
+};
+function packDemo(raw){const poster=raw[0]==='film'&&KNOWN_POSTERS[raw[2]];
+ return {type:raw[0],title:raw[1],lookup_title:raw[2],creator:raw[3],year:raw[4],why:raw[5],
+ image:raw[6]?'https://covers.openlibrary.org/b/isbn/'+raw[6]+'-L.jpg?default=false':poster?'https://image.tmdb.org/t/p/w500/'+poster:'',
+ source_url:raw[7]||'',image_source:raw[6]?'Open Library':poster?'TMDB':''};}
+function demoSearch(query,refinement){const key=demoGroup(query);if(!key)return {items:[],intro:'Для произвольного запроса нужно запустить сайт с подключённым ИИ.'};let items=DEMOS[key].items.map(packDemo);const n=normalize(refinement);
+ if(/только книг|книг|роман|литератур|читать/.test(n))items=items.filter(x=>x.type==='book');
+ else if(/только фильм|фильм|кино/.test(n))items=items.filter(x=>x.type==='film');
+ else if(/живопис|картин|художник/.test(n))items=items.filter(x=>x.type==='painting');
+ if(/не слишком тяж|без тяжел|без тяжёл|легк|светл/.test(n))items=items.filter(x=>!['Преступление и наказание','Герника','Посторонний'].includes(x.title));
+ return {items,intro:DEMOS[key].intro};}
+const TOPIC_TRANSLATIONS={conscience:{term:'совесть',english:'conscience guilt moral dilemma'},stuck:{term:'поиск смысла жизни',english:'existentialism personal growth'},loneliness:{term:'одиночество',english:'loneliness solitude'},paris:{term:'Париж',english:'Paris'}};
+const STOPWORDS=new Set('что такое почему как где кто мне я моя мой мое моя есть про в во на для из по об о с со и или не ли это можно найти покажи расскажи тема вопрос хочу книги книга фильмы фильм картины картина искусство произведения история жизни жизнь'.split(' '));
+function keyword(q){const words=normalize(q).replace(/[^a-zа-яё0-9 ]/gi,' ').split(/\s+/).filter(x=>x.length>2&&!STOPWORDS.has(x));return words.slice(0,4).join(' ')||q.trim();}
+function filteredType(ref){const n=normalize(ref);if(/(только |лишь )?(книг|роман|литератур|читать)/.test(n))return 'book';if(/(только |лишь )?(фильм|кино)/.test(n))return 'film';if(/(только |лишь )?(картин|живопис|художник)/.test(n))return 'painting';return '';}
+function canUseItem(x,type,ref){if(type&&x.type!==type)return false;const n=normalize(ref);if(/без трагед|не слишком тяж|без тяжел|без тяжёл|легк|светл/.test(n))return !['Преступление и наказание','Герника','Посторонний'].includes(x.title);return true;}
+async function fetchCatalog(url){const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),6900);try{const res=await fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}});if(!res.ok)throw new Error('Источник ответил '+res.status);return await res.json();}finally{clearTimeout(timer);}}
+function cleanText(s){return String(s||'').replace(/\s+/g,' ').trim();}
+function limitText(s,n){s=cleanText(s);return s.length>n?s.slice(0,n).replace(/\s+\S*$/,'')+'…':s;}
+function getTopic(q){return TOPIC_TRANSLATIONS[demoGroup(q)]||{term:keyword(q),english:keyword(q)};}
+function withinResults(rows,source){return rows.map(r=>({...r,discovery:source}));}
+async function findBooks(q,ref){const topic=getTopic(q);const searchTerm=topic.english||topic.term;const url='https://openlibrary.org/search.json?q='+encodeURIComponent(searchTerm)+'&fields=key,title,author_name,first_publish_year,cover_i,subject,language&limit=16';
+ const data=await fetchCatalog(url);const docs=(data.docs||[]).filter(d=>d.title&&d.key&&Array.isArray(d.author_name)&&d.author_name.length);
+ const fiction=/fiction|novel|роман|художественная литература|literature|stories|short stories|poetry|poems/i;
+ docs.sort((a,b)=>Number((b.subject||[]).some(x=>fiction.test(x)))-Number((a.subject||[]).some(x=>fiction.test(x))));
+ return docs.slice(0,7).map(d=>({type:'book',title:d.title,lookup_title:d.title,creator:d.author_name[0],year:d.first_publish_year?String(d.first_publish_year):'',why:'Найдено в книжном каталоге по теме «'+topic.term+'». Это поисковое совпадение, а не готовая интерпретация произведения.',image:d.cover_i?'https://covers.openlibrary.org/b/id/'+d.cover_i+'-M.jpg':'',source_url:'https://openlibrary.org'+d.key,image_source:'Open Library'}));
+}
+async function findWikipediaWorks(q,type){const topic=getTopic(q);const isFilm=type==='film';const noun=isFilm?'фильм':'картина';const base=topic.term||keyword(q);
+ const query=base+' '+noun;
+ const params=new URLSearchParams({action:'query',generator:'search',gsrsearch:query,gsrnamespace:'0',gsrlimit:'14',prop:'extracts|pageimages|info',exintro:'1',explaintext:'1',exchars:'500',piprop:'thumbnail',pithumbsize:'480',inprop:'url',format:'json',origin:'*'});
+ const data=await fetchCatalog('https://ru.wikipedia.org/w/api.php?'+params);
+ const pages=Object.values(data.query?.pages||{}).sort((a,b)=>(a.index||99)-(b.index||99));
+ const hint=isFilm?/фильм|кинофильм|кинокартин|кинодрам|мелодрамм|комеди[яи]|телефильм|телесериал|мультфильм/i:/картин[аы]|полотно|живопис|художник|художниц|холст|портрет|пейзаж/i;
+ const unrelated=/^(список |категория:|значения|шаблон:|обсуждение:)/i;
+ return pages.filter(p=>p.title&&p.fullurl&&!unrelated.test(p.title)&&hint.test((p.extract||'').slice(0,380))).slice(0,6).map(p=>{
+ const raw=p.extract||'';const year=(raw.match(/\b(?:1[6789]\d{2}|20[012]\d)\b/)||[])[0]||'';
+ return {type,title:p.title.replace(/\s*\((?:фильм|картина|фильм,.*)\)$/i,''),lookup_title:p.title,creator:'',year,why:'Найдено в энциклопедическом поиске по теме «'+topic.term+'». Проверь описание — связь может быть сюжетной, визуальной или только словесной.',image:p.thumbnail?.source||'',source_url:p.fullurl,image_source:'Wikipedia'};
+ });
+}
+function mergeResults(curated,found,type,ref){const seen=new Set();const answer=[];for(const r of [...curated,...found]){if(!canUseItem(r,type,ref))continue;const key=r.type+':'+normalize(r.lookup_title||r.title).replace(/\W/g,'');if(seen.has(key))continue;seen.add(key);answer.push(r);}return answer.slice(0,21);}
+async function catalogSearch(query,refinement){const group=demoGroup(query);const chosen=filteredType(refinement);const curated=group?DEMOS[group].items.map(packDemo):[];
+ const want=chosen?[chosen]:['book','film','painting'];const requests=[];
+ if(want.includes('book'))requests.push(findBooks(query,refinement));
+ if(want.includes('film'))requests.push(findWikipediaWorks(query,'film'));
+ if(want.includes('painting'))requests.push(findWikipediaWorks(query,'painting'));
+ const results=await Promise.allSettled(requests);
+ const found=results.flatMap(x=>x.status==='fulfilled'?x.value:[]);
+ const failures=results.filter(x=>x.status==='rejected').length;
+ const items=mergeResults(curated,found,chosen,refinement);
+ const intro=(group?DEMOS[group].intro+' ':'')+(found.length?'Дополнено результатами интернет-каталогов.':'')+(failures?' Некоторые каталоги сейчас недоступны.':'');
+ return {items,intro:intro||'Поиск в открытых каталогах. Смысловые связи новых находок ещё не проверены редактором.',sourceStatus:{found:found.length,failures}};
+}
+async function execute(query,refinement='',opts={}){
+ query=query.trim();refinement=refinement.trim();if(query.length<2||state.busy)return;
+ state.query=query;state.refinement=refinement;state.filter='all';state.busy=true;
+ el('query').value=query;el('refine-input').value='';document.body.classList.add('searched');
+ el('results-query').textContent=query;
+ el('results-intro').textContent='Сопоставляем тему с произведениями и открытыми каталогами.';
+ el('mode-indicator').textContent='Поиск в интернете · без ИИ';
+ el('active-refine').classList.toggle('show',!!refinement);el('refine-label').textContent=refinement;
+ el('work-grid').innerHTML='<div class="loading">Ищем произведения</div>';
+ el('disclaimer').textContent='';el('total').textContent='';
+ el('search-button').disabled=true;el('refine-button').disabled=true;
+ try{const result=await catalogSearch(query,refinement);state.works=result.items;state.intro=result.intro;state.mode='catalog';el('results-intro').textContent=state.intro;render();hydrateDemoImages();}
+ catch(e){state.works=[];el('results-intro').textContent='Не удалось получить результаты. Попробуйте ещё раз.';render();}
+ finally{state.busy=false;el('search-button').disabled=false;el('refine-button').disabled=false;}
+ if(!opts.noScroll)requestAnimationFrame(()=>el('results').scrollIntoView({behavior:'smooth',block:'start'}));
+}
+function render(){
+ document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.type===state.filter));
+ const list=state.works.filter(x=>state.filter==='all'||state.filter===x.type);
+ el('total').textContent=list.length?(list.length+' '+(list.length===1?'произведение':'произведений')):'';
+ const grid=el('work-grid');
+ if(!list.length){const desc='Попробуйте более конкретные слова или другую формулировку. Поиск работает через открытые каталоги и не всегда распознаёт скрытые смыслы.';
+  grid.innerHTML='<div class="empty">'+(state.filter==='all'?'Произведения не найдены':'В этой категории пока нет произведений')+'<p>'+desc+'</p></div>';}
+ else {grid.innerHTML=list.map((w,i)=>{const url=String(w.source_url||'');const safeUrl=/^https:\/\//.test(url)?esc(url):'';const image=w.image||'';const pic=image&&/^https:\/\//.test(image)?`<img loading="lazy" src="${esc(image)}" alt="Обложка, постер или изображение произведения: ${esc(w.title)}" onerror="this.classList.add('hidden')">`:'';
+  return `<article class="work" data-type="${esc(w.type)}" data-title="${esc(w.lookup_title||w.title)}" data-creator="${esc(w.creator)}"><div class="cover ${w.type==='painting'?'painting':''}"><div class="no-image">Изображение<br>не найдено</div>${pic}</div><div class="work-body"><div class="work-type">${String(i+1).padStart(2,'0')} / ${kind[w.type]||'Искусство'}${w.discovery?' · Каталог':''}</div><h3>${esc(w.title)}</h3><p class="work-author">${esc(w.creator)}${w.year?', '+esc(w.year):''}</p><p class="work-why">${esc(w.why)}</p>${safeUrl?`<a class="work-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">О произведении ↗</a>`:''}</div></article>`;}).join('');}
+ el('disclaimer').textContent='В первых рекомендациях — редакционные смысловые связи. Дополнительные произведения найдены автоматически в открытых каталогах, их соответствие теме не проверено человеком. Платный ИИ не используется.';
+}
+let imageCalls=0;
+async function hydrateDemoImages(){ // Wikipedia has CORS-enabled API; images are actual page thumbnails.
+ const at=imageCalls++;
+ const cards=[...document.querySelectorAll('.work')].filter(card=>!card.querySelector('img'));
+ await Promise.all(cards.map(async(card)=>{
+  const original=card.dataset.title;const author=card.dataset.creator;
+  const q=encodeURIComponent(original+' '+(card.dataset.type==='film'?'film':card.dataset.type==='painting'?'painting':'novel')+' '+author);
+  const url='https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch='+q+'&gsrlimit=4&prop=pageimages&piprop=thumbnail&pithumbsize=650&format=json&origin=*';
+  try{const response=await fetch(url);if(!response.ok)return;const data=await response.json();if(at!==imageCalls-1)return;
+   const pages=Object.values(data.query?.pages||{}).filter(p=>p.thumbnail?.source);
+   if(!pages.length)return;
+   const norm=s=>s.toLowerCase().replace(/[^a-zа-я0-9]/gi,'');
+   const scored=pages.map(p=>{const title=norm(p.title);const needle=norm(original);let score=0;if(title===needle)score+=10;if(title.includes(needle)||needle.includes(title))score+=5;if(title.includes(norm(author).slice(0,8)))score+=1;return {p,score};});
+   scored.sort((a,b)=>b.score-a.score);if(scored[0].score<5)return;
+   const img=document.createElement('img');img.loading='lazy';img.src=scored[0].p.thumbnail.source;img.alt='Изображение произведения: '+original;img.onerror=()=>img.classList.add('hidden');
+   if(card.isConnected&&!card.querySelector('img'))card.querySelector('.cover').appendChild(img);
+  }catch(e){}
+ }));
+}
+el('search-form').addEventListener('submit',e=>{e.preventDefault();execute(el('query').value,'');});
+el('refine-form').addEventListener('submit',e=>{e.preventDefault();if(!el('refine-input').value.trim())return;execute(state.query,[state.refinement,el('refine-input').value.trim()].filter(Boolean).join('; '),{noScroll:true});});
+el('refine-reset').addEventListener('click',()=>execute(state.query,'',{noScroll:true}));
+for(const b of document.querySelectorAll('[data-query]'))b.addEventListener('click',()=>{el('query').value=b.dataset.query;execute(b.dataset.query);});
+for(const b of document.querySelectorAll('[data-type]'))if(b.classList.contains('tab'))b.addEventListener('click',()=>{state.filter=b.dataset.type;render();hydrateDemoImages();});
+el('home').addEventListener('click',()=>{document.body.classList.remove('searched');state.query='';state.refinement='';state.works=[];el('query').value='';el('refine-input').value='';window.scrollTo({top:0,behavior:'smooth'});});
+
+</script>
+</body>
+</html>
