@@ -41,7 +41,8 @@ async function search(question,refinement='',noScroll=false) {
     finally { clearTimeout(timeout); }
     const data=await response.json().catch(()=>({}));
     if(!response.ok) throw Error(data.error||'Сервис поиска временно недоступен.');
-    if(data.filtered!==true || data.version!=='2026-11-26-quality-v2') throw Error('Нужно обновить код Worker: старая версия не проверяет смысловую связь произведений.');
+    
+if(data.version!=='2026-11-26-search-separated' || !Array.isArray(data.works)) throw Error('Версия поискового сервера несовместима с сайтом.');
     if(seq!==state.sequence)return;
     state.works=Array.isArray(data.works)?data.works:[];
     $('results-intro').textContent=data.intro || 'Подборка произведений, раскрывающих разные стороны вопроса.';
