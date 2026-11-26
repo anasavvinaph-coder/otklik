@@ -30,22 +30,23 @@ async function search(question,refinement='',noScroll=false) {
   $('results-query').textContent=state.question;
   $('active-refine').classList.toggle('show',!!state.refinement); $('refine-label').textContent=state.refinement;
   $('refine-input').value=''; markBusy(true);
-  $('mode-indicator').textContent='Google Search · Gemini · русский язык';
-  $('disclaimer').textContent='Рекомендации формируются по смыслу запроса. Изображения не используются. Ответы ИИ требуют критической проверки.';
-  message('Ищем произведения по смыслу в интернете…');
+  $('mode-indicator').textContent='Смысловой поиск · русский язык';
+  $('disclaimer').textContent='Каждое произведение проходит дополнительную смысловую проверку. Изображений нет. Оценка ИИ может ошибаться.';
+  message('Ищем произведения и проверяем смысловую связь…');
   try {
     if(!api || !/^https:\/\//.test(api)) throw Error('Поиск ещё не подключён. Нужно указать адрес Worker в файле config.js.');
-    const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),35000);
+    const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),46000);
     let response;
     try { response=await fetch(`${api}/search`, {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:state.question,refinement:state.refinement}),signal:controller.signal}); }
     finally { clearTimeout(timeout); }
     const data=await response.json().catch(()=>({}));
     if(!response.ok) throw Error(data.error||'Сервис поиска временно недоступен.');
+    if(data.filtered!==true || data.version!=='2026-11-26-quality-v2') throw Error('Нужно обновить код Worker: старая версия не проверяет смысловую связь произведений.');
     if(seq!==state.sequence)return;
     state.works=Array.isArray(data.works)?data.works:[];
     $('results-intro').textContent=data.intro || 'Подборка произведений, раскрывающих разные стороны вопроса.';
     render();
-    if(!state.works.length) $('results-intro').textContent='Убедительных результатов на русском не найдено. Попробуйте другое уточнение.';
+    if(!state.works.length) $('results-intro').textContent='Среди найденных произведений не оказалось достаточно убедительных. Попробуйте уточнить тему.';
   } catch(err) {
     state.works=[]; $('total').textContent='';
     $('results-intro').textContent='Не удалось завершить поиск.';
